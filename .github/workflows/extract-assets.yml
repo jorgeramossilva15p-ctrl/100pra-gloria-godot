@@ -1,0 +1,32 @@
+name: Extract asset collection
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  extract-assets:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract and commit collection
+        run: |
+          if [ -d asset_library ]; then
+            echo "asset_library already exists"
+            exit 0
+          fi
+          unzip -q 100pra-gloria-assets-collection.zip -d /tmp/asset_collection
+          cp -a /tmp/asset_collection/asset_library ./asset_library
+          cp -a /tmp/asset_collection/DOWNLOAD_REPORT.md ./DOWNLOAD_REPORT.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add asset_library DOWNLOAD_REPORT.md
+          git commit -m "assets: extract curated collection"
+          git push
